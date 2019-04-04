@@ -1,18 +1,17 @@
 #ifndef table_h
 #define table_h
 
-#include <stdio.h>
+#include "arraylist.h"
 
-#include "ioutil.h"
+#define CELL_PADDING 5
 
 struct table {
 	int			ncols;
 	int 			nrows;
-
-	char	 		**col_names;
-	int			*col_spaces;
 	
-	struct table_row 	*rows;
+	struct arraylist	col_spaces;
+	struct arraylist	cols;
+	struct arraylist 	rows;
 };
 
 struct table_row {
@@ -32,6 +31,6 @@ void				table_row_remove(struct table * t, int row_id);
 
 void				table_print(struct table * t);
 
-void				table_free(struct table * t);
+int				table_free(struct table * t);
 
 #endif

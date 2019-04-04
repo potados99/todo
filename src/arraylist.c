@@ -10,6 +10,7 @@ struct arraylist {
 	int size;
 
 	void **data;
+	int  *int_typed;
 };
 */
 
@@ -94,6 +95,28 @@ int list_free(struct arraylist * list) {
 		free(*(list->data + i));
 	}
 
+	free(list->data);
+	if (list->int_typed) free(list->int_typed);
+
 	return RET_OK;
 }
+
+int  *list_to_int_array(struct arraylist * list) {
+	verify(list, NULL, "list is null.");
+	verify(list->data, NULL, "list->data is null.");
+	
+	if (list->int_typed) return list->int_typed;
+
+	int cnt = list->size;
+
+	int *out_array = (int *)malloc(cnt * sizeof(int) + 1);
+	verify(out_array, NULL, "allocation failed.");
+
+	for (int i = 0; i < cnt; ++i) {
+		out_array[i] = (int)(*(list->data[i]));
+	}
+
+	return (list->int_typed = out_array);
+}
+
 

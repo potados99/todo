@@ -2,60 +2,51 @@
 #include "ioutil.h"
 
 #include <stdarg.h>
+#include <stdio.h>
 
 /*
+
 struct table {
-        int                     ncols;
-        int                     nrows;
-
-        char                    **col_names;
-        int                     *col_spaces;
-
-        struct table_row rows   *rows;;
+	int			ncols;
+	int 			nrows;
+	
+	struct arraylist	col_spaces;
+	struct arraylist	cols;
+	struct arraylist 	rows;
 };
-
-struct table_row {
-        int                     id;
-        char	           	**fields;
-};
+ 
  */
 
 void table_init(struct table * t, const char * column_name, ...) {
 	va_list 	valist;
+	char		*_col_name = NULL;
+	char		*_allocated_name = NULL;
+	int		*_allocated_len = NULL;
 
-	char 		*_each_col_name = NULL;
-	int 		_current_col_index = -1;
-	const int 	_column_padding = 5;
-
-	/* allocate. */
-	t->col_names = (char **)malloc(1 * sizeof(char *) + 1); // max 10.
-	t->col_spaces = (int *)malloc(1 * sizeof(int) + 1);	
-
-	t->rows = (struct table_row *)malloc(1 * sizeof(struct table_row) + 1);
+	// Init struct.
+	list_init(&(t->col_spaces));
+	list_init(&(t->cols));
+	list_init(&(t->rows));
+	t->ncols = 0;
+	t->nrows = 0;
 
 	if (column_name) {
-		++_current_col_index;
-		t->col_names[_current_col_index] = allocate_string(column_name);
-		t->col_spaces[_current_col_index] = strlen(column_name) + _column_padding;
-
 		va_start(valist, column_name);
 
-		while ((_each_col_name = va_arg(valist, char *))) {
-			/* expand. */
-			t->col_names = (char **)realloc(t->col_names, (_current_col_index + 2) * sizeof(char *) + 1);
-			t->col_spaces = (int *)realloc(t->col_spaces, (_current_col_index + 2) * sizeof(int) + 1);
+		list_add(&(t->cols), allocate_string(column_name));
 
-			/* assign. */
-			++_current_col_index;
-			t->col_names[_current_col_index] = allocate_string(_each_col_name);
-			t->col_spaces[_current_col_index] = strlen(_each_col_name) + _column_padding;
+		while ((_col_name = va_arg(valist, char *))) {
+			_allocated_name = allocate_string(_col_name);
+			_allocated_len = allocate_int(strlen(_allocated_name) + CELL_PADDING);
+
+			list_add(&(t->cols), _allocated_name);
+			list_add(&(t->col_spaces), _allocated_len);
+
+			t->ncols += 1;
 		}
 
 		va_end(valist);
 	}
-
-	t->ncols = _current_col_index + 1;
-	t->nrows = 0;
 }
 
 char *table_data_get(struct table * t, int row, int column) {
@@ -118,9 +109,9 @@ void table_print(struct table * t) {
 	int 			_ncols = t->ncols;
 	int 			_nrows = t->nrows;
 
-	const char 		**_cols = (const char **)(t->col_names);
-	int 			*_col_spcs = t->col_spaces;
-	struct table_row 	*_rows = t->rows;
+	const char 		**_cols = (const char **)(t->cols.data);
+	int 			*_col_spcs = list_to_int_array(t->col_spaces);
+	struct table_row 	**_rows = (struct table_row **)t->rows.data;
 
 	// Open table.
 	fprintln_string_cells_with_token(
@@ -183,6 +174,11 @@ void table_print(struct table * t) {
 }
 
 
-void table_free(struct table * t) {
+int table_free(struct table * t) {
+	verify(t, RET_WRONG_PARAM, "table is null.");
+
+	list_free(t->col_spaces);
+	list_free(t->cols);
+	list_free(t->rows);
 }
 
