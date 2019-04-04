@@ -4,12 +4,15 @@
 
 #include "table.h"
 
+
 int main(int argc, const char * argv[]) {
 	printf("Hello, world!\n");
 
 	struct table mytable;
 
-	table_init(&mytable, "id", "todo", "priority", NULL);
+	table_init(&mytable, "ID", "Todo", "Priority", NULL);
+
+	table_row_addl(&mytable, "01", "Go home", "High", NULL);
 
 	table_print(&mytable);
 

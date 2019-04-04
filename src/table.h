@@ -5,33 +5,33 @@
 
 #include "ioutil.h"
 
-typedef void * table_element;
+struct table {
+	int			ncols;
+	int 			nrows;
 
-struct table
-{
-	int		columns;
-	int 		rows;
-
-	char 		**column_names;
-
-	/*
-		Refer to the row and column
-	 */
-	table_element 	**content;
+	char	 		**col_names;
+	int			*col_spaces;
+	
+	struct table_row 	*rows;
 };
 
+struct table_row {
+	int			id;
+	char			**fields;
+};
 
-void 			table_init(struct table * t, const char * column_name, ...);
+void 				table_init(struct table * t, const char * column_name, ...);
 
-table_element	 	table_data_get(struct table * t, int row, int column);
-int			table_data_put(struct table * t, int row, int column, table_element content);
+char			 	*table_data_get(struct table * t, int row, int column);
+int				table_data_put(struct table * t, int row, int column, char * content);
 
-int			table_row_addv(struct table * t, table_element * column_data);
-int			table_row_addl(struct table * t, ...);
-void			table_row_remove(struct table * t, int row_index);
+int 				table_row_add(struct table * t, struct table_row row);
+int				table_row_addv(struct table * t, char ** row_fields);
+int				table_row_addl(struct table * t, char * row_field, ...);
+void				table_row_remove(struct table * t, int row_id);
 
-void			table_print(struct table * t);
+void				table_print(struct table * t);
 
-void			table_free(struct table * t);
+void				table_free(struct table * t);
 
 #endif

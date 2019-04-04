@@ -156,6 +156,13 @@ char **allocate_strings(const char **buffer, const int stringCount) {
     return strings;
 }
 
+int *allocate_int(int num) {
+    int *pointer = (int *)malloc(sizeof(int) + 1);
+    *(pointer) = num;
+
+    return pointer;
+}
+
 void println_string_cells_with_token(const char **string,
                                      const int stringCount,
                                      const char *token,

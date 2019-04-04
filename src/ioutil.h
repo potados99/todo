@@ -87,6 +87,8 @@ void clear_console(void);
 char *allocate_string(const char *buffer);
 char **allocate_strings(const char **buffer, const int stringCount);
 
+int *allocate_int(int num);
+
 void println_string_cells_with_token(const char **string,
                                      const int stringCount,
                                      const char *token,
