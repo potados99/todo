@@ -65,8 +65,10 @@ int table_data_put(struct table * t, int row, int column, char * content) {
 }
 
 int table_row_add(struct table * t, struct table_row row) {
+	t->nrows += 1;
+	
 	// realloc.
-	t->rows = (struct table_row *)realloc(t->rows, (t->nrows + 1) * sizeof(struct table_row) + 1);
+	t->rows = (struct table_row *)realloc(t->rows, t->nrows * sizeof(struct table_row) + 1);
 
 	// assign.
 	t->rows[t->nrows - 1] = row;
@@ -81,21 +83,27 @@ int table_row_addl(struct table * t, char * row_field, ...) {
 	va_list valist;
 
 	char * _each_field;
-	int _current_field_index = 0;
+	int _current_field_index = -1;
 	int _sum_rows = 0;
-	struct table_row _each_row;
+	struct table_row _this_row;
 
 	if (row_field) {
 		va_start(valist, row_field);
 
-		_each_row.id = t->rows[t->nrows - 1].id + 1;
-		_each_row.fields = (char **)malloc(t->ncols * sizeof(char *));
+		_this_row.id = t->rows[t->nrows - 1].id + 1;
+		_this_row.fields = (char **)malloc(t->ncols * sizeof(char *));
 
+		++_current_field_index;
+		_this_row.fields[_current_field_index] = allocate_string(row_field);
+		
 		while ((_each_field = va_arg(valist, char *))) {
-			_each_row.fields[_current_field_index++] = allocate_string(_each_field);
-
-			_sum_rows += table_row_add(t, _each_row);
+			++_current_field_index;
+			_this_row.fields[_current_field_index] = allocate_string(_each_field);
+			if (strlen(_each_field) + 5 > t->col_spaces[_current_field_index]) 
+				t->col_spaces[_current_field_index] = strlen(_each_field) + 5;
 		}
+		
+		_sum_rows += table_row_add(t, _this_row);
 
 		va_end(valist);
 	}
@@ -115,21 +123,63 @@ void table_print(struct table * t) {
 	struct table_row 	*_rows = t->rows;
 
 	// Open table.
-	fprintln_string_cells_with_token(stdout, NULL, _ncols, "═", _col_spcs, "╔", "╦", "╗");
-	
+	fprintln_string_cells_with_token(
+			stdout, 
+			NULL, 
+			_ncols, 
+			BOX_EDGE_HORIZONTAL, 
+			_col_spcs, 
+			BOX_CORNER_TOP_LEFT, 
+			BOX_INTER_HORIZONTAL_DOWN, 
+			BOX_CORNER_TOP_RIGHT);
+
 	// Print the column headers.
-	fprintln_string_cells_with_token(stdout, _cols, _ncols, " ", _col_spcs, "║", "║", "║");
+	fprintln_string_cells_with_token(
+			stdout, 
+			_cols, 
+			_ncols, 
+			" ", 
+			_col_spcs, 
+			BOX_EDGE_VERTICAL, 
+			BOX_EDGE_VERTICAL, 
+			BOX_EDGE_VERTICAL);
+
+	// Separator before rows.
+	fprintln_string_cells_with_token(
+			stdout, 
+			NULL, 
+			_ncols, 
+			BOX_EDGE_HORIZONTAL, 
+			_col_spcs, 
+			BOX_INTER_VERTICAL_RIGHT, 
+			BOX_INTER_CROSS, 
+			BOX_INTER_VERTICAL_LEFT);
 
 	// Print rows.
 	const char **_each_fields;
 	for (int i = 0; i < _nrows; ++i) {
 		_each_fields = (const char **)((_rows + i)->fields);	
-		fprintln_string_cells_with_token(stdout, _each_fields, _ncols, " ", _col_spcs, "║", "║", "║");
+		fprintln_string_cells_with_token(
+				stdout, 
+				_each_fields,
+				_ncols, 
+				" ",
+				_col_spcs, 
+				BOX_EDGE_VERTICAL, 
+				BOX_EDGE_VERTICAL, 
+				BOX_EDGE_VERTICAL);
 	}
 
-	// End table.
-	fprintln_string_cells_with_token(stdout, NULL, _ncols, "═", _col_spcs, "╚", "╩", "╝");
-
+	// Close table.
+	fprintln_string_cells_with_token(
+			stdout, 
+			NULL, 
+			_ncols, 
+			BOX_EDGE_HORIZONTAL, 
+			_col_spcs, 
+			BOX_CORNER_BOTTOM_LEFT, 
+			BOX_INTER_HORIZONTAL_UP,
+			BOX_CORNER_BOTTOM_RIGHT);
 }
 
 

@@ -12,7 +12,9 @@ int main(int argc, const char * argv[]) {
 
 	table_init(&mytable, "ID", "Todo", "Priority", NULL);
 
-	table_row_addl(&mytable, "01", "Go home", "High", NULL);
+	table_row_addl(&mytable, "01", "Go home", "Low", NULL);
+	table_row_addl(&mytable, "02", "Have dinner", "Low", NULL);
+	table_row_addl(&mytable, "04", "Debug this app.", "High", NULL);
 
 	table_print(&mytable);
 
