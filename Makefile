@@ -1,36 +1,48 @@
-# Makefile boilerplate version 0.0.1 (20190204)
+#################################################
 
-TARGET = todo
+# Makefile boilerplate version 0.1.0 (20190416)
 
-CC = gcc
-CFLAGS = -Wall
+TARGET_INITIAL	:= todo
+TARGET		:= $(TARGET_INITIAL)
 
-SRC_DIR = src/
-OBJ_DIR = build/
-BIN_DIR = bin/
+CC		:= gcc
+CFLAGS		:= -Wall
+LIB		:=
 
-OUT_DIR = $(OBJ_DIR) $(BIN_DIR)
+TARGET_DIR	:= bin
+SRC_DIR		:= src
+INC_DIR		:= include
+OBJ_DIR		:= build
+SRC_EXT		:= c
+OBJ_EXT		:= o
 
-SOURCE = $(wildcard $(SRC_DIR)/*.c)
-BASENAMES = $(notdir $(basename $(SOURCE)))
-OBJECT = $(addsuffix .o, $(addprefix $(OBJ_DIR), $(BASENAMES)))
+#################################################
 
-.PHONY: directories
+## DO NOT EDIT BELOW ##
+
+SOURCES := $(shell find $(SRC_DIR) -type f -name *.$(SRC_EXT))
+OBJECTS := $(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(SOURCES:.$(SRC_EXT)=.$(OBJ_EXT)))
 
 all: directories $(TARGET)
+	@echo [$@]
+	@echo "All done."
 
-$(TARGET): $(OBJECT)
-	$(LINK.c) -o $@ $^
-	mv $@ $(BIN_DIR) 
-
-# Object file wildcard rule.
-build/%.o: src/%.c
-	$(COMPILE.c) $< -o $@
-
-directories: $(OUT_DIR)
-
-$(OUT_DIR):
-	mkdir -p $(OUT_DIR)
+directories:
+	@echo [$@]
+	@mkdir -p $(TARGET_DIR) $(OBJ_DIR)
 
 clean:
-	rm -rf $(OUT_DIR)
+	@echo [$@]
+	rm -rf $(TARGET_DIR) $(OBJ_DIR)
+	rm $(TARGET)
+
+# LINK
+$(TARGET): $(OBJECTS)
+	@echo [$@]
+	$(LINK.c) -o $(TARGET_DIR)/$(TARGET) $^ $(LIB)
+	@ln -sf $(TARGET_DIR)/$(TARGET) ./
+
+# COMPILE
+$(OBJ_DIR)/%.$(OBJ_EXT): $(SRC_DIR)/%.$(SRC_EXT)
+	@echo [$@]
+	$(CC) $(CFLAGS) -c -o $@ $< -I$(INC_DIR)
