@@ -2,37 +2,64 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "table.h"
-#include "arraylist.h"
+#include <sched.h>
+#include "list.h"
 
-int main(int argc, const char * argv[]) {
-	printf("Hello, world!\n");
+struct st
+{
+    int a;
+    int b;
+    
+    struct list_head list;
+};
 
-	/*
-	struct table mytable;
 
-	table_init(&mytable, "ID", "Todo", "Priority", NULL);
+struct list_head *add_new_st(struct st data, struct list_head *head)
+{
+    LIST_HEAD(new_head); /* init is at local. */
+    
+    struct st *allocated = malloc(sizeof(struct st));
+    *allocated = data;
+    
+    allocated->list = new_head;
+    allocated->list.next = &(allocated->list);
+    allocated->list.prev = &(allocated->list); /* re-init at allocated space. */
 
-	table_row_addl(&mytable, "01", "Go home", "Low", NULL);
-	table_row_addl(&mytable, "02", "Have dinner", "Low", NULL);
-	table_row_addl(&mytable, "04", "Debug this app.", "High", NULL);
+    if (head == NULL)
+    {
+        // param header is null. init it.
+        printf("init: %d\n", allocated->a);
+    }
+    else
+    {
+        printf("added: %d\n", allocated->a);
+        list_add(&(allocated->list), head);
+    }
+    
+    return &(allocated->list);
+}
 
-	table_print(&mytable);
-*/
+int main(int argc, const char * argv[])
+{
+    struct st items[] = {
+        {1, 2, NULL},
+        {5, 6, NULL},
+        {9, 10, NULL}
+    };
+    
+    LIST_HEAD(H);
 
-	char * a = allocate_string("hello");
-	char * b = allocate_string("world");
-
-	struct arraylist mylist;
-
-	list_init(&mylist);
-
-	list_add(&mylist, a);
-	list_add(&mylist, b);
-
-	list_dump(&mylist);
-
-	list_free(&mylist);
-
+    struct list_head *end = &H;
+    
+    for (int i = 0; i < 3; ++i)
+    {
+        end = add_new_st(items[i], end);
+    }
+    
+    struct st *cur;
+    list_for_each_entry(cur, &H, list) {
+        printf("%d, %d\n", cur->a, cur->b);
+    }
+    
 	return 0;
 }
