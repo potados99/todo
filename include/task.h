@@ -10,7 +10,11 @@
 #define task_h
 
 #include <stdio.h>
+#include <stdbool.h>
 
+#include "list.h"
+
+void add_task();
 
 
 #endif /* task_h */

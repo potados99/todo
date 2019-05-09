@@ -5,61 +5,68 @@
 #include <sched.h>
 #include "list.h"
 
-struct st
+struct task
 {
-    int a;
-    int b;
+    int prio;
+    char *title;
+    
+    // other fields...
     
     struct list_head list;
 };
 
 
-struct list_head *add_new_st(struct st data, struct list_head *head)
+struct list_head *add_new_st(struct task data, struct list_head *head)
 {
-    LIST_HEAD(new_head); /* init is at local. */
+    if (!head)
+        return NULL;
     
-    struct st *allocated = malloc(sizeof(struct st));
-    *allocated = data;
-    
-    allocated->list = new_head;
-    allocated->list.next = &(allocated->list);
-    allocated->list.prev = &(allocated->list); /* re-init at allocated space. */
+    struct task *alloced_st = malloc(sizeof(struct task));
+    *alloced_st = data;
 
-    if (head == NULL)
-    {
-        // param header is null. init it.
-        printf("init: %d\n", allocated->a);
-    }
-    else
-    {
-        printf("added: %d\n", allocated->a);
-        list_add(&(allocated->list), head);
-    }
+    alloced_st->list.next = &(alloced_st->list);
+    alloced_st->list.prev = &(alloced_st->list); /* init node at allocated space. */
     
-    return &(allocated->list);
+    list_add(&(alloced_st->list), head);
+
+    return &(alloced_st->list);
 }
 
 int main(int argc, const char * argv[])
 {
-    struct st items[] = {
-        {1, 2, NULL},
-        {5, 6, NULL},
-        {9, 10, NULL}
-    };
-    
+    // alloc & init
     LIST_HEAD(H);
-
     struct list_head *end = &H;
     
-    for (int i = 0; i < 3; ++i)
+
+    struct task tasks[] = {
+        {4, "Low prio one.", NULL},
+        {1, "High prio one.", NULL},
+        {2, "So so.", NULL},
+        {4, "Not important.", NULL}
+    };
+
+    
+    
+    // assign
+    for (int i = 0; i < sizeof(tasks) / sizeof(struct task); ++i)
     {
-        end = add_new_st(items[i], end);
+        end = add_new_st(tasks[i], end);
     }
     
-    struct st *cur;
+    
+    // use
+    struct task *cur;
     list_for_each_entry(cur, &H, list) {
-        printf("%d, %d\n", cur->a, cur->b);
+        printf("%d, %s\n", cur->prio, cur->title); /* entry start from the next to the header. */
     }
+    
+    // dealloc
+    struct list_head *hcur;
+    list_for_each(hcur, &H) {
+        
+    }
+    
     
 	return 0;
 }
